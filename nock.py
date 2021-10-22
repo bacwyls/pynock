@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 
 
 # []
@@ -110,3 +111,72 @@ def tar(noun):
     else:
         ## LINE 17
         return (nock((noun[0], noun[1][0])), nock((noun[0], noun[1][1])))
+
+'''
+  end of interpreter.
+  beginning of nock string parser.
+'''
+
+
+# is this string a natural number?
+def is_atom(s):
+  for c in s:
+    if c not in "0123456789":
+      return False
+  return True
+
+
+# is this is a cell that starts and ends with "[" and "]"?
+# is this an xplicit cell
+def is_xcell(s):
+  l = len(s)
+  bcnt = 0 
+  
+  if s[0] != "[":
+    return False
+
+  for (i, c) in enumerate(s):
+    if c == "[":
+      bcnt += 1
+    if c == "]":
+      bcnt -= 1
+
+    if bcnt == 0:
+      return i == l - 1 
+          
+
+# split on the fist space where bcnt == 0
+# aka split after the first noun
+def split_cell(s):
+  if is_xcell(s):
+    s = s[1:-1]
+
+  bcnt = 0 
+  for (i, c) in enumerate(s):
+    if c == "[":
+      bcnt += 1
+    if c == "]":
+      bcnt -= 1
+
+    if c == " " and bcnt == 0:
+      return [s[:i], s[i+1:]]
+
+  return [-1, -1] 
+
+
+# takes a string with nocks noun syntax
+# returns the python list tree for that noun
+def parse_noun(s):
+  if is_atom(s):
+    return int(s)
+
+  [h, t] = split_cell(s)
+  return [parse_noun(h), parse_noun(t)]
+
+
+if __name__ == "__main__":
+  noun = sys.argv[1]
+  noun = parse_noun(noun)
+  res = nock(noun)
+  print(res)
+
